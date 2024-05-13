@@ -17,8 +17,8 @@
 
       .cell {
         background-color: black;
-        border: 1px solid white; /* 셀 사이의 간격을 만들기 위한 테두리 설정 */
-        position: relative; /* 자식 요소의 위치 설정을 위한 상대적 위치 설정 */
+        border: 1px solid white;
+        position: relative;
       }
 
       .cell.white {
@@ -30,21 +30,30 @@
       }
 
       .custom-content {
-        position: absolute; /* 절대 위치 설정 */
-        top: 50%; /* 부모 요소 상단으로부터 50% 위치 */
-        left: 50%; /* 부모 요소 왼쪽으로부터 50% 위치 */
-        transform: translate(
-          -50%,
-          -50%
-        ); /* 수평 및 수직으로 50% 이동하여 정확한 중앙 위치 설정 */
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         background-color: green;
-        width: 40px; /* 원하는 크기로 조절하세요 */
-        height: 40px; /* 원하는 크기로 조절하세요 */
-        cursor: pointer; /* 마우스 커서를 포인터로 변경하여 클릭 가능한 요소임을 표시 */
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
       }
 
       .highlighted {
-        background-color: lightblue; /* 강조된 셀의 배경색 */
+        background-color: lightblue;
+      }
+
+      .red-ball {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: red;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        z-index: 1;
       }
 
       .arrows {
@@ -54,7 +63,7 @@
         width: 300px;
         left: 50%;
         transform: translateX(-50%);
-        display: flex; /* 방향키를 가로로 배치하기 위해 추가 */
+        display: flex;
       }
 
       .arrow {
@@ -72,10 +81,10 @@
       <div class="grid-game" id="gridGame"></div>
 
       <div class="arrows">
-        <div class="arrow up" onclick="moveGreenCell('up')">&#8593;</div>
-        <div class="arrow down" onclick="moveGreenCell('down')">&#8595;</div>
-        <div class="arrow left" onclick="moveGreenCell('left')">&#8592;</div>
-        <div class="arrow right" onclick="moveGreenCell('right')">&#8594;</div>
+        <div class="arrow up" onclick="moveRedBall('up')">&#8593;</div>
+        <div class="arrow down" onclick="moveRedBall('down')">&#8595;</div>
+        <div class="arrow left" onclick="moveRedBall('left')">&#8592;</div>
+        <div class="arrow right" onclick="moveRedBall('right')">&#8594;</div>
       </div>
       <div
         style="
@@ -110,12 +119,10 @@
     <script>
       let selectedGreenCell = null;
 
-      // 그리드를 만들기 위한 함수
       function createGrid(rows, cols) {
         const gridGame = document.getElementById("gridGame");
         const gridSize = rows * cols;
 
-        // 셀 생성
         for (let i = 0; i < gridSize; i++) {
           const cell = document.createElement("div");
           cell.classList.add("cell");
@@ -145,13 +152,13 @@
           [3, 5],
         ];
 
-        // 초록색 셀 생성 및 지정된 위치에 배치
         const greenPositions = [
           [3, 2],
           [3, 3],
           [5, 3],
           [5, 5],
         ];
+
         greenPositions.forEach((pos) => {
           const greenCell = document.createElement("div");
           greenCell.classList.add("custom-content");
@@ -159,31 +166,34 @@
           placeGreenCell(greenCell, pos[0], pos[1]);
         });
 
-        // 하얀색 배경 셀 추가
         whitePositions.forEach((pos) => {
           const index = (pos[0] - 1) * cols + (pos[1] - 1);
           const whiteCell = gridGame.children[index];
           whiteCell.classList.add("white");
         });
 
-        // 파란색 배경 셀 추가
         bluePositions.forEach((pos) => {
           const index = (pos[0] - 1) * cols + (pos[1] - 1);
           const blueCell = gridGame.children[index];
           blueCell.classList.add("blue");
         });
 
+        // 빨간색 공 생성
+        const redBall = document.createElement("div");
+        redBall.classList.add("red-ball");
+        gridGame.appendChild(redBall);
+        placeRedBall(redBall, 6, 4);
+
         // 초록색 셀 클릭 시 이벤트 처리
-        document.querySelectorAll(".custom-content").forEach((item) => {
-          item.addEventListener("click", (event) => {
-            // 클릭한 초록색 셀을 선택하고 표시
-            selectedGreenCell = event.target;
-            document.querySelectorAll(".custom-content").forEach((item) => {
-              item.classList.remove("highlighted");
-            });
-            selectedGreenCell.classList.add("highlighted");
-          });
-        });
+        // document.querySelectorAll(".custom-content").forEach((item) => {
+        //   item.addEventListener("click", (event) => {
+        //     selectedGreenCell = event.target;
+        //     document.querySelectorAll(".custom-content").forEach((item) => {
+        //       item.classList.remove("highlighted");
+        //     });
+        //     selectedGreenCell.classList.add("highlighted");
+        //   });
+        // });
       }
 
       // 초록색 셀을 특정 위치에 배치하는 함수
@@ -192,13 +202,18 @@
         gridGame.children[index].appendChild(greenCell);
       }
 
-      // 초록색 셀을 이동시키는 함수
-      function moveGreenCell(direction) {
-        if (!selectedGreenCell) return;
+      // 빨간색 공을 특정 위치에 배치하는 함수
+      function placeRedBall(redBall, row, col) {
+        const index = (row - 1) * 6 + (col - 1);
+        gridGame.children[index].appendChild(redBall);
+      }
 
-        const parentCell = selectedGreenCell.parentElement;
-        const rows = 6; // 그리드 행 수
-        const cols = 6; // 그리드 열 수
+      // 빨간색 공을 이동시키는 함수
+      function moveRedBall(direction) {
+        const redBall = document.querySelector(".red-ball");
+        const parentCell = redBall.parentElement;
+        const rows = 6;
+        const cols = 6;
         const currentIndex = Array.from(
           parentCell.parentElement.children
         ).indexOf(parentCell);
@@ -222,17 +237,6 @@
             return;
         }
 
-        // 새로운 인덱스의 반대 방향에 흰색 또는 초록색이 있는지 확인
-        const oppositeIndex = getOppositeIndex(currentIndex, direction);
-        const oppositeCell = parentCell.parentElement.children[oppositeIndex];
-        const oppositeCellContent =
-          oppositeCell.querySelector(".custom-content");
-
-        // 반대 방향에 흰색 또는 초록색이 있는 경우 이동 불가
-        if (oppositeCell.classList.contains("white") || oppositeCellContent) {
-          return;
-        }
-
         // 새로운 인덱스가 유효한지 확인하고 유효할 경우 이동
         if (
           newIndex >= 0 &&
@@ -241,17 +245,54 @@
           !((currentIndex + 1) % cols === 0 && direction === "right")
         ) {
           const targetCell = parentCell.parentElement.children[newIndex];
-          if (
-            targetCell.classList.contains("white") ||
-            targetCell.querySelector(".custom-content")
-          ) {
-            return; // 흰색이나 초록색 셀로는 이동할 수 없음
+          if (targetCell.classList.contains("white")) {
+            return;
           }
-          parentCell.removeChild(selectedGreenCell);
-          targetCell.appendChild(selectedGreenCell);
+          if (targetCell.querySelector(".custom-content")) {
+            let newGreenIndex;
+            switch (direction) {
+              case "up":
+                newGreenIndex = newIndex - cols;
+                break;
+              case "down":
+                newGreenIndex = newIndex + cols;
+                break;
+              case "left":
+                newGreenIndex = newIndex - 1;
+                break;
+              case "right":
+                newGreenIndex = newIndex + 1;
+                break;
+              default:
+                return;
+            }
 
-          // 클리어 조건 확인
-          checkClear();
+            // 새로운 초록색 셀이 유효한지 확인하고, 유효할 경우 초록색을 밀기
+            if (
+              newGreenIndex >= 0 &&
+              newGreenIndex < rows * cols &&
+              !(newIndex % cols === 0 && direction === "left") &&
+              !((newIndex + 1) % cols === 0 && direction === "right")
+            ) {
+              const newGreenCell =
+                parentCell.parentElement.children[newGreenIndex];
+              if (
+                !newGreenCell.classList.contains("white") &&
+                !newGreenCell.querySelector(".custom-content")
+              ) {
+                // 새로운 초록색 셀이 흰색이나 다른 초록색 셀이 아닌 경우에만 이동
+                parentCell.removeChild(redBall);
+                targetCell.appendChild(redBall);
+                newGreenCell.appendChild(
+                  targetCell.querySelector(".custom-content")
+                );
+              }
+            }
+          } else {
+            // 새로운 위치에 초록색이 없는 경우 그냥 이동
+            parentCell.removeChild(redBall);
+            targetCell.appendChild(redBall);
+          }
         }
       }
 
